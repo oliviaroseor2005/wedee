@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="pageTitle">Loading video… — StreamHub</title>
+<meta name="description" id="pageDescription" content="Watch on StreamHub.">
+<link rel="canonical" href="https://example.com/v/watch.html" id="canonicalLink">
+
+<meta property="og:type" content="video.other">
+<meta property="og:title" id="ogTitle" content="StreamHub">
+<meta property="og:description" id="ogDescription" content="A fast, modern video streaming platform.">
+<meta property="og:image" id="ogImage" content="../assets/logo.png">
+<meta property="og:url" id="ogUrl" content="https://example.com/v/watch.html">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" id="twitterTitle" content="StreamHub">
+<meta name="twitter:description" id="twitterDescription" content="A fast, modern video streaming platform.">
+<meta name="twitter:image" id="twitterImage" content="../assets/logo.png">
+
+<link rel="icon" href="../assets/logo.png">
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://reactahead.com">
+<link rel="dns-prefetch" href="https://video-api.olivia-rose-or2005.workers.dev">
+<link rel="dns-prefetch" href="https://data.bots62340.workers.dev">
+<link rel="preload" href="../style.css" as="style">
+<link rel="preload" href="../config.js" as="script">
+
+<script>
+(function () {
+  try {
+    if (localStorage.getItem("streamhub_theme") === "light") {
+      document.documentElement.setAttribute("data-theme", "light");
+    }
+  } catch (e) { /* ignore */ }
+})();
+</script>
+
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+
+<!-- ===================== HEADER ===================== -->
+<header class="site-header">
+  <div class="header-inner">
+    <a href="../index.html" class="brand">
+      <div class="brand-logo">S</div>
+      <span class="brand-name">Stream<span>Hub</span></span>
+    </a>
+
+    <nav class="main-nav" aria-label="Primary">
+      <a href="../index.html">Videos</a>
+      <a href="#">Category</a>
+      <a href="#">Live</a>
+      <a href="#">Community</a>
+      <a href="#">Upload</a>
+      <a href="#">About</a>
+    </nav>
+
+    <!-- In-page search: filters the Related Videos pool on THIS page
+         without navigating away, so playback is never interrupted.
+         See watch.js -> wireInPageSearch(). -->
+    <div class="search-box">
+      <input type="search" id="searchInput" placeholder="Search videos, tags, creators…" aria-label="Search videos">
+      <span class="icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </span>
+    </div>
+
+    <div class="auth-area" id="authWidget">
+      <button class="auth-signin-btn" id="fallbackSignInBtn">Sign In</button>
+    </div>
+
+    <button class="hamburger" id="hamburgerBtn" aria-label="Open filters menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</header>
+
+<!-- ===================== WATCH LAYOUT ===================== -->
+<div class="watch-layout container">
+
+  <!-- MAIN COLUMN: player + info + related -->
+  <main class="watch-main">
+
+    <div id="notFoundBanner" class="not-found-banner" style="display:none;">
+      Sorry, we couldn't find that video. It may have been removed, or the link is incorrect.
+      <a href="../index.html">Browse all videos →</a>
+    </div>
+
+    <div id="watchContent" style="display:none;">
+      <div class="player-wrap" id="playerWrap">
+        <div class="player-loading" id="playerLoading">
+          <span class="spinner"></span> Loading player…
+        </div>
+      </div>
+
+      <h1 class="watch-title" id="watchTitle"></h1>
+
+      <!-- watchViews now sits directly beside likeBtn (both pushed to
+           the right by margin-left:auto on the views span) instead of
+           being spread out next to the author/date on the left. It's
+           filled in only from the live TurboVIPlay fetch — see
+           updateViewsDisplay() in watch.js — so it's empty/hidden here
+           until that resolves. -->
+      <div class="watch-meta">
+        <a href="#" class="watch-author" id="watchAuthorLink" style="display:none;"></a>
+        <span class="watch-date" id="watchDate"></span>
+        <span class="watch-views" id="watchViews" style="margin-left:auto; display:none;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px; margin-right:4px;"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg><span id="watchViewsCount"></span>
+        </span>
+        <button class="btn-secondary" id="likeBtn">♡ Like</button>
+      </div>
+
+      <div class="watch-tags" id="watchTags"></div>
+
+      <p class="watch-description" id="watchDescription"></p>
+    </div>
+
+    <!-- In-page ad, below the player/description, above related -->
+    <div class="ad-unit inline-ad">
+      <div class="ad-label">Advertisement</div>
+      <div class="ad-slot" id="adSlotInline">Advertisement</div>
+    </div>
+
+    <div class="related-section">
+      <h2 class="related-heading">Related Videos</h2>
+      <div class="video-grid" id="relatedGrid"></div>
+      <div class="loader-wrap" id="relatedLoaderWrap" style="display:none;">
+        <button class="load-more-btn" id="relatedLoadMoreBtn">Load More</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- RIGHT AD COLUMN -->
+  <aside class="ad-column" id="adColumn">
+    <div class="ad-unit"><div class="ad-label">Advertisement</div><div class="ad-slot" id="adSlot1">Advertisement</div></div>
+    <div class="ad-unit"><div class="ad-label">Advertisement</div><div class="ad-slot" id="adSlot3">Advertisement</div></div>
+  </aside>
+
+</div>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="site-footer">
+  <p>&copy; 2026 StreamHub. All rights reserved. &middot; <a href="#">Terms</a> &middot; <a href="#">Privacy</a> &middot; <a href="#">Contact</a></p>
+</footer>
+
+<!-- 1. config.js — defines fetchAllVideos(), videoHref(), currentVideoIdFromUrl(), AD_CODES, etc. -->
+<script src="../config.js"></script>
+
+<!-- 1b. countries.js — only actually used by the sign-up modal, but auth.js
+        looks for initCountrySearch() on every page it runs on. -->
+<script src="../countries.js"></script>
+
+<!-- 2. Fill the 3 side ad slots + 1 inline ad slot, deferred to idle time
+        so ad iframes never compete with the player/related grid for
+        bandwidth on the critical rendering path. -->
+<script>
+(function () {
+  var runWhenIdle = window.requestIdleCallback || function (cb) { setTimeout(cb, 1); };
+  runWhenIdle(function () {
+  var slots = [
+    ["adSlot1", "banner160x300"],
+    ["adSlot3", "banner160x600"],
+    ["adSlotInline", "banner728x90"]
+  ];
+  slots.forEach(function (pair) {
+    var id = pair[0], key = pair[1];
+    var el = document.getElementById(id);
+    if (!el) return;
+    if (typeof fillAdSlot !== "function") {
+      el.textContent = "Error: config.js not loaded (fillAdSlot missing)";
+      el.style.color = "#ff6b6b";
+      console.error("[ads] fillAdSlot is not defined — check config.js is returning 200, not 404, in DevTools > Network.");
+      return;
+    }
+    if (typeof AD_CODES === "undefined" || !AD_CODES[key] || !AD_CODES[key].trim()) {
+      el.textContent = 'Error: no AD_CODES entry for "' + key + '"';
+      el.style.color = "#ff6b6b";
+      console.error('[ads] AD_CODES["' + key + '"] is empty in config.js.');
+      return;
+    }
+    var ok = fillAdSlot(el, key);
+    if (!ok) {
+      el.textContent = 'Error: fillAdSlot() failed for "' + key + '"';
+      el.style.color = "#ff6b6b";
+    }
+  });
+  if (typeof injectPageLevelAds === "function") injectPageLevelAds();
+  if (typeof renderMobileAdBar === "function") renderMobileAdBar();
+  });
+})();
+</script>
+
+<!-- 3. Watch-page logic: finds the video matching ?id=, renders player,
+        title, tags, author, related videos + in-page search. -->
+<script src="watch.js"></script>
+
+<!-- 4/5. Firebase + auth. account.js also loaded here (not just on
+        account.html) purely to expose window.StreamHubLibrary
+        (like/history helpers) — see watch.js. -->
+<script type="module" src="../firebase-config.js"></script>
+<script type="module" src="../auth.js"></script>
+<script type="module" src="../account.js"></script>
+
+<!-- 6. Wires the static fallback Sign In button (see index.html for why). -->
+<script>
+(function () {
+  var btn = document.getElementById("fallbackSignInBtn");
+  if (!btn) return;
+  btn.addEventListener("click", function () {
+    if (window.StreamHubAuth && typeof window.StreamHubAuth.openModal === "function") {
+      window.StreamHubAuth.openModal("signin");
+    } else {
+      alert("Sign-in isn't ready yet. Open DevTools (F12) > Console for the error.");
+      console.error("[auth] window.StreamHubAuth is not available — firebase-config.js/auth.js did not finish loading.");
+    }
+  });
+})();
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("../sw.js").catch(function (err) {
+      console.warn("[sw] registration failed (site still works without it):", err);
+    });
+  });
+}
+</script>
+</body>
+</html>
