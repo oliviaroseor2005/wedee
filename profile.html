@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title id="pageTitle">Profile — StreamHub</title>
+<meta name="description" id="pageDescription" content="View this creator's videos on StreamHub.">
+<link rel="icon" href="../assets/logo.png">
+<link rel="stylesheet" href="../style.css">
+<script>
+(function () {
+  try {
+    if (localStorage.getItem("streamhub_theme") === "light") {
+      document.documentElement.setAttribute("data-theme", "light");
+    }
+  } catch (e) { /* ignore */ }
+})();
+</script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="../index.html" class="brand">
+      <div class="brand-logo">S</div>
+      <span class="brand-name">Stream<span>Hub</span></span>
+    </a>
+    <nav class="main-nav" aria-label="Primary">
+      <a href="../index.html">Videos</a>
+      <a href="#">Category</a>
+      <a href="#">Live</a>
+      <a href="#">Community</a>
+      <a href="#">Upload</a>
+      <a href="#">About</a>
+    </nav>
+    <div class="search-box">
+      <input type="search" id="searchInput" placeholder="Search videos, tags, creators…" aria-label="Search videos">
+      <span class="icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      </span>
+    </div>
+    <div class="auth-area" id="authWidget">
+      <button class="auth-signin-btn" id="fallbackSignInBtn">Sign In</button>
+    </div>
+    <button class="hamburger" id="hamburgerBtn" aria-label="Menu" style="visibility:hidden;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+  </div>
+</header>
+
+<div class="container">
+
+  <div id="notFoundBanner" class="not-found-banner" style="display:none;">
+    Sorry, we couldn't find that creator.
+    <a href="../index.html">Browse all videos →</a>
+  </div>
+
+  <div id="profileContent" style="display:none;">
+    <div class="profile-header">
+      <img class="profile-avatar" id="profileAvatar" src="" alt="">
+      <div>
+        <h1 class="profile-name" id="profileName"></h1>
+        <div class="profile-video-count" id="profileVideoCount"></div>
+      </div>
+    </div>
+
+    <h2 class="related-heading">Videos</h2>
+    <div class="video-grid" id="authorVideoGrid"></div>
+    <div class="loader-wrap" id="authorLoaderWrap" style="display:none;">
+      <button class="load-more-btn" id="authorLoadMoreBtn">Load More</button>
+    </div>
+
+    <div class="more-videos-section">
+      <h2 class="related-heading">More Videos</h2>
+      <div class="video-grid" id="moreVideosGrid"></div>
+      <div class="loader-wrap" id="moreLoaderWrap" style="display:none;">
+        <button class="load-more-btn" id="moreLoadMoreBtn">Load More</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <p>&copy; 2026 StreamHub. All rights reserved. &middot; <a href="#">Terms</a> &middot; <a href="#">Privacy</a> &middot; <a href="#">Contact</a></p>
+</footer>
+
+<script src="../config.js"></script>
+<script src="../countries.js"></script>
+<script src="profile.js"></script>
+<script type="module" src="../firebase-config.js"></script>
+<script type="module" src="../auth.js"></script>
+<script>
+(function () {
+  var btn = document.getElementById("fallbackSignInBtn");
+  if (!btn) return;
+  btn.addEventListener("click", function () {
+    if (window.StreamHubAuth && typeof window.StreamHubAuth.openModal === "function") {
+      window.StreamHubAuth.openModal("signin");
+    } else {
+      alert("Sign-in isn't ready yet. Check the console.");
+    }
+  });
+})();
+</script>
+</body>
+</html>
